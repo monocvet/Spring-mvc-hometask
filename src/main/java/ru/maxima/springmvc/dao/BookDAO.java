@@ -5,11 +5,9 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.maxima.springmvc.models.Book;
-import ru.maxima.springmvc.models.Person;
 
 import javax.validation.Valid;
 import java.util.List;
-
 @Component
 public class BookDAO {
 
@@ -37,23 +35,10 @@ public class BookDAO {
 
     public void update(int id, @Valid Book updatedBook) {
         jdbcTemplate.update("update book set name = ? , author = ?, year = ?  where id = ?", updatedBook.getName(),
-                updatedBook.getAuthor(), updatedBook.getYear(), id);
+                updatedBook.getAuthor(),updatedBook.getYear(), id);
     }
 
     public void delete(int id) {
         jdbcTemplate.update("delete from book where id = ?", id);
-    }
-
-    public void BookInPerson(int personId, int bookId) {
-        jdbcTemplate.update("update book set person_id = ? where id = ?", personId, bookId);
-    }
-
-    public void freeBook(int bookId) {
-        jdbcTemplate.update("update book set person_id = ? where id = ?", null, bookId);
-    }
-
-    public Person searchBook(int personId) {
-        return jdbcTemplate.query("select * from person where id = ?", new Object[]{personId}, new BeanPropertyRowMapper<>(Person.class)).
-                stream().findAny().orElse(null);
     }
 }
