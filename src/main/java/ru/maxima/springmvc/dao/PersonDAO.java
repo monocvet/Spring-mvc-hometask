@@ -4,10 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.maxima.springmvc.models.Book;
 import ru.maxima.springmvc.models.Person;
 
 import java.sql.*;
 import java.util.*;
+
+import static java.util.Arrays.stream;
 
 @Component
 public class PersonDAO {
@@ -41,5 +44,10 @@ public class PersonDAO {
 
     public void delete(int id) {
         jdbcTemplate.update("delete from person where id = ?", id);
+    }
+
+    public List<Book> findBook(int id) {
+        return jdbcTemplate.query("select * from book where person_id = ?",
+        new Object[]{id}, new BeanPropertyRowMapper<>(Book.class));
     }
 }
