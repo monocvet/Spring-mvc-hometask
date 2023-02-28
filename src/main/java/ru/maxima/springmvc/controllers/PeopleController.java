@@ -1,5 +1,6 @@
 package ru.maxima.springmvc.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,6 +9,7 @@ import ru.maxima.springmvc.dao.PersonDAO;
 import ru.maxima.springmvc.models.Person;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Controller
 @RequestMapping("/people")
@@ -16,6 +18,7 @@ public class PeopleController {
     // PEOPLE - много
     private final PersonDAO personDAO;
 
+    @Autowired
     public PeopleController(PersonDAO personDAO) {
         this.personDAO = personDAO;
     }
@@ -24,7 +27,8 @@ public class PeopleController {
     @GetMapping()
     public String index(Model model) {
         //Получение всех людей из нашей БД и пересылать их в отображение
-        model.addAttribute("people", personDAO.index());
+        List<Person> people = personDAO.index();
+        model.addAttribute("people", people);
         return "people/index";
     }
 
@@ -32,25 +36,28 @@ public class PeopleController {
     public String show(@PathVariable("id") int id, Model model) {
         // Получать конкретного человека по его id
         model.addAttribute("person", personDAO.show(id));
-//        model.addAttribute("show_book", personDAO.findBook(id));
+        model.addAttribute("person_books", personDAO.findUserBooks(id));
         return "people/show";
 
     }
+
     @GetMapping("/new")
-    public String newPerson (@ModelAttribute("person") Person person) {
+    public String newPerson(@ModelAttribute("person") Person person) {
         return "people/new";
     }
+
     @PostMapping()
     public String create(@ModelAttribute("person") @Valid Person person,
-                         BindingResult bindingResult){
-        if (bindingResult.hasErrors()){
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             return "people/new";
         }
-       personDAO.save(person);
-       return "redirect:/people";
+        personDAO.save(person);
+        return "redirect:/people";
     }
+
     @GetMapping("/{id}/edit")
-    public String edit (Model model, @PathVariable("id") int id) {
+    public String edit(Model model, @PathVariable("id") int id) {
         model.addAttribute("person", personDAO.show(id));
         return "people/edit";
 
@@ -58,7 +65,7 @@ public class PeopleController {
 
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult,
-                         @PathVariable("id")int id){
+                         @PathVariable("id") int id) {
         if (bindingResult.hasErrors()) {
             return "people/edit";
         }

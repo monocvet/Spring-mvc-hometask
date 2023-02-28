@@ -1,52 +1,67 @@
 package ru.maxima.springmvc.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.maxima.springmvc.dao.BookDAO;
+import ru.maxima.springmvc.dao.PersonDAO;
 import ru.maxima.springmvc.models.Book;
 
 import javax.validation.Valid;
+
 @Controller
 @RequestMapping("/books")
 public class BooksController {
 
     private final BookDAO bookDAO;
+    private final PersonDAO personDAO;
 
-    public BooksController(BookDAO bookDAO) {
+
+    @Autowired
+    public BooksController(BookDAO bookDAO, PersonDAO personDAO) {
         this.bookDAO = bookDAO;
+        this.personDAO = personDAO;
+
     }
 
     @GetMapping()
     public String index(Model model) {
         //Получение всех книг из нашей БД и пересылать их в отображение
         model.addAttribute("books", bookDAO.index());
+        model.addAttribute("people", personDAO.index());
         return "books/index";
     }
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") int id, Model model) {
         // Получать конкретную книгу по её id
+
+        model.addAttribute("person", personDAO.index());
         model.addAttribute("book", bookDAO.show(id));
+        model.addAttribute("people", bookDAO.peopleGetBooks(id));
         return "books/show";
 
     }
+
     @GetMapping("/new")
-    public String newBook (@ModelAttribute("book") Book book) {
+    public String newBook(@ModelAttribute("book") Book book) {
         return "books/new";
     }
+
     @PostMapping()
     public String create(@ModelAttribute("book") @Valid Book book,
-                         BindingResult bindingResult){
-        if (bindingResult.hasErrors()){
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             return "books/new";
         }
         bookDAO.save(book);
         return "redirect:/books";
     }
+
     @GetMapping("/{id}/edit")
-    public String edit (Model model, @PathVariable("id") int id) {
+    public String edit(Model model, @PathVariable("id") int id) {
         model.addAttribute("book", bookDAO.show(id));
         return "books/edit";
 
@@ -54,7 +69,7 @@ public class BooksController {
 
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("book") @Valid Book book, BindingResult bindingResult,
-                         @PathVariable("id")int id){
+                         @PathVariable("id") int id) {
         if (bindingResult.hasErrors()) {
             return "books/edit";
         }
@@ -67,4 +82,17 @@ public class BooksController {
         bookDAO.delete(id);
         return "redirect:/books";
     }
+
+    @PostMapping("/free")
+    public String freeBook(@RequestParam Integer book_id, @RequestParam Integer person_id, Model model) {
+        bookDAO.freeBook(book_id);
+        return "redirect:/books/" + book_id;
+    }
+
+    @PostMapping("/select")
+    public String addBookInUser(@RequestParam Integer id, @RequestParam Integer book_id, Model model) {
+        bookDAO.addBookInUser(id, book_id);
+        return "redirect:/books/" + book_id;
+    }
+
 }

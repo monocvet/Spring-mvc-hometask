@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.maxima.springmvc.models.Book;
+import ru.maxima.springmvc.models.Person;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -41,4 +42,19 @@ public class BookDAO {
     public void delete(int id) {
         jdbcTemplate.update("delete from book where id = ?", id);
     }
+
+    public void freeBook(int bookId) {
+        jdbcTemplate.update("update book set person_id = ? where id = ?",null, bookId);
+    }
+
+    public void addBookInUser(int personId,int bookId) {
+        jdbcTemplate.update("update book set person_id = ? where id = ?",
+                personId,bookId);
+    }
+
+
+    public List<Person> peopleGetBooks (int id) {
+        return jdbcTemplate.query("select * from book where person_id = ?", new Object[]{id}, new BeanPropertyRowMapper<>(Person.class));
+    }
+
 }
